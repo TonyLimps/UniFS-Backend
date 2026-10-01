@@ -1,6 +1,8 @@
 package org.tonylimps.unifs.config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,13 +10,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.tonylimps.unifs.util.JwtUtil;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -35,10 +38,12 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             String token = header.substring(7);
             Claims claims = jwtUtil.parseToken(token);
-            String userId = claims.getSubject();
-            var auth = new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
+            Long userId = jwtUtil.getId(claims);
+            String role = jwtUtil.getRole(claims);
+            var authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+            var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
-        } catch (SignatureException se) {
+        } catch (SignatureException | ExpiredJwtException | MalformedJwtException | IllegalArgumentException e) {
             SecurityContextHolder.clearContext();
         }
         filterChain.doFilter(request, response);

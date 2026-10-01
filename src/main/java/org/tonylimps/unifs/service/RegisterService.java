@@ -78,7 +78,7 @@ public class RegisterService {
         BeanUtils.copyProperties(session, user);
         userMapper.insert(user);
 
-        var token = jwtUtil.generateToken(user.getId());
+        var token = jwtUtil.generateToken(user);
         var response = new RegisterFinishResponse();
         response.setId(user.getId());
         response.setToken(token);

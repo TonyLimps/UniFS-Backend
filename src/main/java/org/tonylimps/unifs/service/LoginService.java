@@ -12,6 +12,7 @@ import org.tonylimps.unifs.model.dto.request.LoginStartRequest;
 import org.tonylimps.unifs.exception.BusinessException;
 import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.mapper.UserMapper;
+import org.tonylimps.unifs.model.entity.User;
 import org.tonylimps.unifs.model.pojo.AuthSession;
 import org.tonylimps.unifs.util.JwtUtil;
 import org.tonylimps.unifs.util.PassKeyUtil;
@@ -74,7 +75,11 @@ public class LoginService {
             throw new BusinessException(ErrorCode.LOGIN_FAILED);
         }
 
-        var token = jwtUtil.generateToken(id);
+        // generate token
+        User user = userMapper.selectById(id);
+        user.setLastLoginTime(LocalDateTime.now());
+        userMapper.updateById(user);
+        var token = jwtUtil.generateToken(user);
         var response = new LoginFinishResponse();
         response.setToken(token);
 
