@@ -1,0 +1,19 @@
+spring:
+    application:
+        name: UniFS-Backend
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: ${DATASOURCE_URL}
+        username: root
+        password: ${DB_PASSWORD}
+mybatis:
+    configuration:
+        map-underscore-to-camel-case: true
+jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    valid-seconds: 43200 # 12 hours
+signature-algorithm: SHA256withRSA
+register-login-request-timeout-seconds: 60
+challenge-length: 128
+clean-timeout-requests-cron: 0 0 0 * * ?
+
