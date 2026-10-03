@@ -11,16 +11,15 @@ import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.mapper.RoomMapper;
 import org.tonylimps.unifs.mapper.UserMapper;
 import org.tonylimps.unifs.mapper.UserRoomMapper;
+import org.tonylimps.unifs.model.dto.request.JoinRoomRequest;
+import org.tonylimps.unifs.model.dto.request.PatchMemberRequest;
 import org.tonylimps.unifs.model.dto.request.RoomRequest;
-import org.tonylimps.unifs.model.dto.response.RoomMemberResponse;
+import org.tonylimps.unifs.model.dto.response.MemberResponse;
 import org.tonylimps.unifs.model.dto.response.RoomResponse;
-import org.tonylimps.unifs.model.dto.response.UserResponse;
 import org.tonylimps.unifs.model.entity.Room;
-import org.tonylimps.unifs.model.entity.User;
 import org.tonylimps.unifs.model.entity.UserRoom;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
@@ -42,7 +41,7 @@ public class RoomService {
 
     public RoomResponse getRoomById(Authentication authentication, Long roomId) {
         Long userId = (Long) authentication.getPrincipal();
-        UserRoom userRoom = userRoomMapper.select(userId, roomId);
+        UserRoom userRoom = userRoomMapper.select(roomId, userId);
         boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
         if (userRoom == null && !isAdmin) {
             throw new BusinessException(ErrorCode.ROOM_ACCESS_DENIED);
@@ -53,7 +52,7 @@ public class RoomService {
             throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
         }
 
-        Set<RoomMemberResponse> members = userRoomMapper.selectMembersByRoomId(roomId);
+        Set<MemberResponse> members = userRoomMapper.selectMembersByRoomId(roomId);
         RoomResponse roomResponse = new RoomResponse();
         BeanUtils.copyProperties(room, roomResponse);
         roomResponse.setMembers(members);
@@ -72,7 +71,7 @@ public class RoomService {
         userRoom.setRoomId(room.getId());
         userRoom.setRoomAdmin(1);
         userRoomMapper.insert(userRoom);
-        Set<RoomMemberResponse> members = userRoomMapper.selectMembersByRoomId(room.getId());
+        Set<MemberResponse> members = userRoomMapper.selectMembersByRoomId(room.getId());
         RoomResponse roomResponse = new RoomResponse();
         BeanUtils.copyProperties(room, roomResponse);
         roomResponse.setMembers(members);
@@ -81,7 +80,7 @@ public class RoomService {
 
     public void patchRoomById(Authentication authentication, Long roomId, RoomRequest roomRequest) {
         Long userId = (Long) authentication.getPrincipal();
-        UserRoom userRoom = userRoomMapper.select(userId, roomId);
+        UserRoom userRoom = userRoomMapper.select(roomId, userId);
         boolean isServerAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
         if (userRoom == null && !isServerAdmin) {
             throw new BusinessException(ErrorCode.ROOM_ACCESS_DENIED);
@@ -94,15 +93,12 @@ public class RoomService {
         BeanUtils.copyProperties(roomRequest, room);
         room.setId(roomId);
         room.setPassword(passwordEncoder.encode(roomRequest.getPassword()));
-        int lines = roomMapper.updateById(room);
-        if (lines == 0) {
-            throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
-        }
+        roomMapper.updateById(room);
     }
 
     public void deleteRoomById(Authentication authentication, Long roomId) {
         Long userId = (Long) authentication.getPrincipal();
-        UserRoom userRoom = userRoomMapper.select(userId, roomId);
+        UserRoom userRoom = userRoomMapper.select(roomId, userId);
         boolean isServerAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
         if (userRoom == null && !isServerAdmin) {
             throw new BusinessException(ErrorCode.ROOM_ACCESS_DENIED);
@@ -111,9 +107,67 @@ public class RoomService {
             throw new BusinessException(ErrorCode.ROOM_ACCESS_DENIED);
         }
 
-        int lines = roomMapper.deleteById(roomId);
-        if (lines == 0) {
-            throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
+        roomMapper.deleteById(roomId);
+    }
+
+    public void joinRoom(Authentication authentication, Long roomId, JoinRoomRequest request) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        String rawPassword = request.getPassword();
+        Room room = roomMapper.selectById(roomId);
+        if (room == null) {
+            throw new BusinessException(ErrorCode.JOIN_ROOM_FAILED);
         }
+        String password = room.getPassword();
+        if (!passwordEncoder.matches(rawPassword, password)) {
+            throw new BusinessException(ErrorCode.JOIN_ROOM_FAILED);
+        }
+
+        UserRoom userRoom = new UserRoom();
+        userRoom.setUserId(userId);
+        userRoom.setRoomId(roomId);
+        userRoomMapper.insert(userRoom);
+    }
+
+    public void patchMemberById(Authentication authentication,
+                                Long roomId,
+                                Long memberId,
+                                PatchMemberRequest request) {
+        Long userId = (Long) authentication.getPrincipal();
+        UserRoom userRoom = userRoomMapper.select(roomId, userId);
+        boolean isServerAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        if (userRoom == null && !isServerAdmin) {
+            throw new BusinessException(ErrorCode.MEMBER_ACCESS_DENIED);
+        }
+        if (userRoom != null && userRoom.getRoomAdmin() != 1) {
+            throw new BusinessException(ErrorCode.MEMBER_ACCESS_DENIED);
+        }
+
+        UserRoom targetUserRoom = userRoomMapper.select(roomId, memberId);
+        if (targetUserRoom == null) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        BeanUtils.copyProperties(request,targetUserRoom);
+        userRoomMapper.updateById(targetUserRoom);
+    }
+
+    public void deleteMemberById(Authentication authentication, Long roomId, Long memberId) {
+        Long userId = (Long) authentication.getPrincipal();
+        UserRoom userRoom = userRoomMapper.select(roomId, userId);
+        boolean isServerAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        if (userRoom == null && !isServerAdmin) {
+            throw new BusinessException(ErrorCode.MEMBER_ACCESS_DENIED);
+        }
+        if (userRoom != null && userRoom.getRoomAdmin() != 1 && !userId.equals(memberId)) {
+            throw new BusinessException(ErrorCode.MEMBER_ACCESS_DENIED);
+        }
+
+        UserRoom targetUserRoom = userRoomMapper.select(roomId, memberId);
+        if (targetUserRoom == null) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        userRoomMapper.delete(roomId, memberId);
     }
 }

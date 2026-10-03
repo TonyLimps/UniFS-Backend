@@ -3,7 +3,7 @@ package org.tonylimps.unifs.model.dto.response;
 import lombok.Data;
 
 @Data
-public class RoomMemberResponse {
+public class MemberResponse {
     Long id;
     String name;
     Integer roomAdmin;

@@ -11,5 +11,5 @@ public class RoomResponse {
     String name;
     String authEmail;
     LocalDateTime createTime;
-    Set<RoomMemberResponse> members;
+    Set<MemberResponse> members;
 }
