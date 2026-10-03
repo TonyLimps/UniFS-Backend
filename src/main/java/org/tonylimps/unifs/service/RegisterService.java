@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.tonylimps.unifs.exception.BusinessException;
 import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.model.dto.request.RegisterFinishRequest;
-import org.tonylimps.unifs.model.dto.request.RegisterStartRequest;
+import org.tonylimps.unifs.model.dto.request.UserRequest;
 import org.tonylimps.unifs.model.dto.response.RegisterFinishResponse;
 import org.tonylimps.unifs.model.dto.response.RegisterStartResponse;
 import org.tonylimps.unifs.mapper.UserMapper;
@@ -42,7 +42,7 @@ public class RegisterService {
         this.REQUEST_TIMEOUT_SECONDS = exp;
     }
 
-    public RegisterStartResponse start(RegisterStartRequest request) {
+    public RegisterStartResponse start(UserRequest request) {
         var id = random.nextLong();
         var session = new AuthSession();
         var challenge = passKeyUtil.generateChallenge();

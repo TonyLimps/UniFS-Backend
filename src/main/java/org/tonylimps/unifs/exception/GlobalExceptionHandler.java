@@ -12,7 +12,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<?> handleException(BusinessException ex) {
-        log.error(ex.getMessage());
+        var status = ex.getHttpStatus();
+        if (status.is4xxClientError()) {
+            log.warn(ex.getMessage());
+        } else {
+            log.error(ex.getMessage());
+        }
         return ResponseEntity.status(ex.getHttpStatus()).body(ex.getCode()+" "+ex.getMessage());
     }
 

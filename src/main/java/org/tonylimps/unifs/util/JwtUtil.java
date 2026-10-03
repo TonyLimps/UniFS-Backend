@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.tonylimps.unifs.model.entity.User;
 
 import javax.crypto.SecretKey;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Component
@@ -28,7 +27,7 @@ public class JwtUtil {
     public String generateToken(User user) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + VALID_SECONDS*1000);
-        String role = (user.getAdmin() != null && user.getAdmin() == 1)
+        String role = (user.getServerAdmin() != null && user.getServerAdmin() == 1)
                 ? "ROLE_ADMIN"
                 : "ROLE_USER";
         return Jwts.builder()

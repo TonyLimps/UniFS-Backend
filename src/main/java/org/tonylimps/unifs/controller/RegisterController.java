@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tonylimps.unifs.model.dto.request.RegisterFinishRequest;
-import org.tonylimps.unifs.model.dto.request.RegisterStartRequest;
+import org.tonylimps.unifs.model.dto.request.UserRequest;
 import org.tonylimps.unifs.model.dto.response.RegisterFinishResponse;
 import org.tonylimps.unifs.model.dto.response.RegisterStartResponse;
 import org.tonylimps.unifs.service.RegisterService;
@@ -23,7 +23,7 @@ public class RegisterController {
     }
 
     @PostMapping
-    public ResponseEntity<RegisterStartResponse> start(@Valid @RequestBody RegisterStartRequest request) {
+    public ResponseEntity<RegisterStartResponse> start(@Valid @RequestBody UserRequest request) {
         var result = registerService.start(request);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

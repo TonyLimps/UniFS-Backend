@@ -50,6 +50,9 @@ public class SecurityConfig {
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().print("401 Unauthorized");
         };
     }
 
@@ -57,6 +60,9 @@ public class SecurityConfig {
     public AccessDeniedHandler accessDeniedHandler() {
         return (request, response, accessDeniedException) -> {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().print("403 Forbidden");
         };
     }
 

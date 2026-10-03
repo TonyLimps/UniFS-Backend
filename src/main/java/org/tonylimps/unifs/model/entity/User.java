@@ -13,7 +13,7 @@ public class User {
     @TableId(type = IdType.ASSIGN_ID)
     Long id;
     String name;
-    Integer admin;
+    Integer serverAdmin;
     String publicKey;
     LocalDateTime registerTime;
     LocalDateTime lastLoginTime;

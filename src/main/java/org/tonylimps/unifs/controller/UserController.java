@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.tonylimps.unifs.model.dto.request.PatchUserRequest;
+import org.tonylimps.unifs.model.dto.request.UserRequest;
 import org.tonylimps.unifs.model.dto.response.UserResponse;
 import org.tonylimps.unifs.service.UserService;
 
@@ -28,7 +28,7 @@ public class UserController {
 
     @PatchMapping("/me")
     public ResponseEntity<Void> patchCurrentUser(Authentication authentication,
-                                                 @RequestBody PatchUserRequest request) {
+                                                 @RequestBody UserRequest request) {
         userService.patchCurrentUser(authentication, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -47,7 +47,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<Void> patchUserById(@PathVariable Long id, PatchUserRequest request) {
+    public ResponseEntity<Void> patchUserById(@PathVariable Long id, UserRequest request) {
         userService.patchUserById(id, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

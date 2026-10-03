@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@TableName(value = "rooms", autoResultMap = true)
+@TableName(value = "rooms")
 public class Room {
     @TableId(type = IdType.ASSIGN_ID)
     Long id;
@@ -18,5 +18,5 @@ public class Room {
     String password;
     String authEmail;
     LocalDateTime createTime;
-    LocalDateTime expireTime;
+    LocalDateTime lastUsedTime;
 }

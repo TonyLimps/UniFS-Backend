@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     LOGIN_FAILED(40001, HttpStatus.BAD_REQUEST, "Wrong user id or signature."),
     REGISTER_FAILED(40002, HttpStatus.BAD_REQUEST, "Wrong user id or signature."),
-    USER_NOT_FOUND(40401, HttpStatus.NOT_FOUND, "User not found."),;
+    ROOM_ACCESS_DENIED(40301, HttpStatus.FORBIDDEN, "You are not authorized to operate on this room."),
+    USER_NOT_FOUND(40401, HttpStatus.NOT_FOUND, "User not found."),
+    ROOM_NOT_FOUND(40402, HttpStatus.NOT_FOUND, "Room not found."),;
 
     final int code;
     final HttpStatus httpStatus;

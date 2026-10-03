@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS rooms;
 CREATE TABLE users (
     id BIGINT PRIMARY KEY,
     name VARCHAR(32) NOT NULL,
-    admin TINYINT NOT NULL CHECK(admin in (0,1)) DEFAULT 0,
+    server_admin TINYINT NOT NULL CHECK(server_admin in (0,1)) DEFAULT 0,
     public_key VARCHAR(512) NOT NULL UNIQUE,
     register_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -29,14 +29,16 @@ CREATE TABLE rooms (
     password VARCHAR(128) NOT NULL,
     auth_email VARCHAR(64) NOT NULL DEFAULT '',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expire_time DATETIME DEFAULT NULL
+    last_used_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE users_rooms(
+CREATE TABLE users_rooms (
     user_id BIGINT NOT NULL,
     room_id BIGINT NOT NULL,
     PRIMARY KEY (user_id, room_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (room_id) REFERENCES rooms(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    room_admin TINYINT NOT NULL CHECK(room_admin in (0,1)) DEFAULT 0,
+    join_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ```

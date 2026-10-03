@@ -3,7 +3,8 @@ package org.tonylimps.unifs.model.dto.request;
 import lombok.Data;
 
 @Data
-public class PatchUserRequest {
+public class RoomRequest {
     String name;
-    String publicKey;
+    String password;
+    String authEmail;
 }
