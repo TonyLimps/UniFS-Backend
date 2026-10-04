@@ -1,4 +1,4 @@
-package org.tonylimps.unifs.config;
+package org.tonylimps.unifs.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -14,7 +14,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.tonylimps.unifs.util.JwtUtil;
 
 import java.io.IOException;
 import java.util.Collections;

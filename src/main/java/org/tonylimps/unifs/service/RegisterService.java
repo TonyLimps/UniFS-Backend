@@ -14,8 +14,8 @@ import org.tonylimps.unifs.model.dto.response.RegisterStartResponse;
 import org.tonylimps.unifs.mapper.UserMapper;
 import org.tonylimps.unifs.model.entity.User;
 import org.tonylimps.unifs.model.pojo.AuthSession;
-import org.tonylimps.unifs.util.JwtUtil;
-import org.tonylimps.unifs.util.PassKeyUtil;
+import org.tonylimps.unifs.security.JwtUtil;
+import org.tonylimps.unifs.security.PassKeyUtil;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;

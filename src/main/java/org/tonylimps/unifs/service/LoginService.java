@@ -14,8 +14,8 @@ import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.mapper.UserMapper;
 import org.tonylimps.unifs.model.entity.User;
 import org.tonylimps.unifs.model.pojo.AuthSession;
-import org.tonylimps.unifs.util.JwtUtil;
-import org.tonylimps.unifs.util.PassKeyUtil;
+import org.tonylimps.unifs.security.JwtUtil;
+import org.tonylimps.unifs.security.PassKeyUtil;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -31,9 +31,9 @@ public class LoginService {
 
     @Autowired
     public LoginService(UserMapper userMapper,
-                           PassKeyUtil passKeyUtil,
-                           JwtUtil jwtUtil,
-                           @Value("${register-login-request-timeout-seconds}") int exp) {
+                        PassKeyUtil passKeyUtil,
+                        JwtUtil jwtUtil,
+                        @Value("${register-login-request-timeout-seconds}") int exp) {
         this.userMapper = userMapper;
         this.passKeyUtil = passKeyUtil;
         this.jwtUtil = jwtUtil;

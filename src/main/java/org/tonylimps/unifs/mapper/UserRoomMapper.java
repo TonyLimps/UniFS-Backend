@@ -23,4 +23,7 @@ public interface UserRoomMapper extends BaseMapper<UserRoom> {
 
     @Delete("DELETE FROM users_rooms WHERE room_id = #{roomId} AND user_id = #{userId};")
     int delete(Long roomId, Long userId);
+
+    @Delete("DELETE FROM users_rooms WHERE room_id = #{roomId};")
+    int deleteByRoomId(Long roomId);
 }

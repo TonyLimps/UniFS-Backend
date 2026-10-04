@@ -1,4 +1,4 @@
-package org.tonylimps.unifs.util;
+package org.tonylimps.unifs.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -26,7 +26,7 @@ public class JwtUtil {
 
     public String generateToken(User user) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + VALID_SECONDS*1000);
+        Date expiration = new Date(now.getTime() + VALID_SECONDS * 1000);
         String role = (user.getServerAdmin() != null && user.getServerAdmin() == 1)
                 ? "ROLE_ADMIN"
                 : "ROLE_USER";
@@ -47,6 +47,7 @@ public class JwtUtil {
             return false;
         }
     }
+
     public Claims parseToken(String token) throws SignatureException, ExpiredJwtException, MalformedJwtException, IllegalArgumentException {
         return Jwts.parser()
                 .verifyWith(KEY)
@@ -54,15 +55,18 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
     public Claims parseWithoutVerify(String token) {
         return Jwts.parser()
                 .build()
                 .parseUnsecuredClaims(token)
                 .getPayload();
     }
+
     public String getRole(Claims claims) {
         return (String) claims.get("role");
     }
+
     public Long getId(Claims claims) {
         return Long.parseLong(claims.getSubject());
     }

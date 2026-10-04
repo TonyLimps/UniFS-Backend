@@ -1,4 +1,4 @@
-package org.tonylimps.unifs.config;
+package org.tonylimps.unifs.security;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

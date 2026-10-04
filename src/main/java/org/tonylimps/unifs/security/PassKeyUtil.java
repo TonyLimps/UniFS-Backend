@@ -1,4 +1,4 @@
-package org.tonylimps.unifs.util;
+package org.tonylimps.unifs.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,13 +27,13 @@ public class PassKeyUtil {
         this.keyFactory = KeyFactory.getInstance("RSA");
     }
 
-    public String generateChallenge(){
+    public String generateChallenge() {
         byte[] challenge = new byte[CHALLENGE_LENGTH];
         random.nextBytes(challenge);
         return encoder.encodeToString(challenge);
     }
 
-    public boolean verify(String rawChallenge, String encodedSignature, String encodedPublicKey){
+    public boolean verify(String rawChallenge, String encodedSignature, String encodedPublicKey) {
         try {
             // decode
             var challenge = decoder.decode(rawChallenge);

@@ -23,12 +23,12 @@ public class LoginController {
     }
 
     @PostMapping
-    public ResponseEntity<LoginStartResponse> start(@RequestBody LoginStartRequest loginStartRequest){
+    public ResponseEntity<LoginStartResponse> start(@RequestBody LoginStartRequest loginStartRequest) {
         return ResponseEntity.ok(loginService.start(loginStartRequest));
     }
 
     @PostMapping("/finish")
-    public ResponseEntity<LoginFinishResponse> finish(@RequestBody LoginFinishRequest loginFinishRequest){
+    public ResponseEntity<LoginFinishResponse> finish(@RequestBody LoginFinishRequest loginFinishRequest) {
         return ResponseEntity.ok(loginService.finish(loginFinishRequest));
     }
 

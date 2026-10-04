@@ -94,6 +94,10 @@ public class RoomService {
         room.setId(roomId);
         room.setPassword(passwordEncoder.encode(roomRequest.getPassword()));
         roomMapper.updateById(room);
+
+        if (roomRequest.getPassword() != null) {
+            userRoomMapper.deleteByRoomId(roomId);
+        }
     }
 
     public void deleteRoomById(Authentication authentication, Long roomId) {
@@ -148,7 +152,7 @@ public class RoomService {
             throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
-        BeanUtils.copyProperties(request,targetUserRoom);
+        BeanUtils.copyProperties(request, targetUserRoom);
         userRoomMapper.updateById(targetUserRoom);
     }
 
