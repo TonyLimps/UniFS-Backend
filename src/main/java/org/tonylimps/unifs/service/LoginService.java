@@ -82,6 +82,7 @@ public class LoginService {
         var token = jwtUtil.generateToken(user);
         var response = new LoginFinishResponse();
         response.setToken(token);
+        sessions.remove(request.getId());
 
         return response;
     }

@@ -82,6 +82,7 @@ public class RegisterService {
         var response = new RegisterFinishResponse();
         response.setId(user.getId());
         response.setToken(token);
+        sessions.remove(request.getId());
 
         return response;
     }

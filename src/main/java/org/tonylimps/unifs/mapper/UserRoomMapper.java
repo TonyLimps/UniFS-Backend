@@ -26,4 +26,7 @@ public interface UserRoomMapper extends BaseMapper<UserRoom> {
 
     @Delete("DELETE FROM users_rooms WHERE room_id = #{roomId};")
     int deleteByRoomId(Long roomId);
+
+    @Select("SELECT user_id FROM users_rooms WHERE room_id in (SELECT room_id FROM users_rooms WHERE user_id = #{userId});")
+    Set<Long> selectSameRoomUserIds(Long userId);
 }

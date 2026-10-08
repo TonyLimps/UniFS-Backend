@@ -16,4 +16,5 @@ signature-algorithm: SHA256withRSA
 register-login-request-timeout-seconds: 60
 challenge-length: 128
 clean-timeout-requests-cron: 0 0 0 * * ?
-
+ticket-expire-seconds: 30
+clean-expired-tickets-cron: 0 0 0 * * ?
