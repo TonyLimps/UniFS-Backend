@@ -1,11 +1,12 @@
 package org.tonylimps.unifs.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.tonylimps.unifs.exception.BusinessException;
+import org.tonylimps.unifs.exception.ApiException;
 import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.model.dto.request.RegisterFinishRequest;
 import org.tonylimps.unifs.model.dto.request.UserRequest;
@@ -21,7 +22,9 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 public class RegisterService {
     private final int REQUEST_TIMEOUT_SECONDS;
@@ -60,9 +63,9 @@ public class RegisterService {
     public RegisterFinishResponse finish(RegisterFinishRequest request) {
         var session = sessions.get(request.getId());
         // check if request timed out
-        if (session == null) throw new BusinessException(ErrorCode.REGISTER_FAILED);
+        if (session == null) throw new ApiException(ErrorCode.REGISTER_FAILED);
         if (session.getExpireTime().isBefore(LocalDateTime.now())) {
-            throw new BusinessException(ErrorCode.REGISTER_FAILED);
+            throw new ApiException(ErrorCode.REGISTER_FAILED);
         }
 
         // verify signature
@@ -70,7 +73,7 @@ public class RegisterService {
         var rawChallenge = session.getChallenge();
         var publicKey = session.getPublicKey();
         if (!passKeyUtil.verify(rawChallenge, signature, publicKey)) {
-            throw new BusinessException(ErrorCode.REGISTER_FAILED);
+            throw new ApiException(ErrorCode.REGISTER_FAILED);
         }
 
         // create user
@@ -84,15 +87,19 @@ public class RegisterService {
         response.setToken(token);
         sessions.remove(request.getId());
 
+        log.info("User registered: uid={} name={}", user.getId(), user.getName());
         return response;
     }
 
     @Scheduled(cron = "${clean-timeout-requests-cron}")
-    public void cleanTempUsers() {
+    public void cleanTimeoutRequests() {
+        AtomicInteger cleaned = new AtomicInteger();
         sessions.forEach((id, info) -> {
             if (info.getExpireTime().isBefore(LocalDateTime.now())) {
                 sessions.remove(id);
+                cleaned.addAndGet(1);
             }
         });
+        log.info("Cleaned {} timeout register requests", cleaned.get());
     }
 }

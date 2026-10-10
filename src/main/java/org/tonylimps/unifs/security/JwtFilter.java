@@ -8,6 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
+@Slf4j
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
@@ -42,7 +44,11 @@ public class JwtFilter extends OncePerRequestFilter {
             var authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
             var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
-        } catch (SignatureException | ExpiredJwtException | MalformedJwtException | IllegalArgumentException e) {
+        } catch (ExpiredJwtException e) {
+            log.debug("JWT expired: uri={} userId={}", request.getRequestURI(), e.getClaims().getSubject());
+            SecurityContextHolder.clearContext();
+        } catch (SignatureException | MalformedJwtException | IllegalArgumentException e) {
+            log.warn("JWT rejected: uri={} reason={} ip={}", request.getRequestURI(), e.getMessage(), request.getRemoteAddr());
             SecurityContextHolder.clearContext();
         }
         filterChain.doFilter(request, response);

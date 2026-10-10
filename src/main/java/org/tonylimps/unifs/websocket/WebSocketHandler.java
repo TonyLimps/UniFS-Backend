@@ -3,12 +3,14 @@ package org.tonylimps.unifs.websocket;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.tonylimps.unifs.mapper.UserRoomMapper;
 import org.tonylimps.unifs.model.pojo.Command;
 import org.tonylimps.unifs.service.TicketService;
+import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
@@ -32,28 +34,54 @@ public class WebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        Long id = (Long) session.getAttributes().get("userId");
+        if(id != null) sessions.remove(id);
+        log.debug("WS session closed: userId={} sid={} status={}", id, session.getId(), status);
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) {
+        log.debug("WS session established: sid={}", session.getId());
+    }
+
+    @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
-        Command command = jsonMapper.readValue(message.getPayload(), Command.class);
-        if (!auth(session, command)) return;
+        Command command;
+        try {
+            command = jsonMapper.readValue(message.getPayload(), Command.class);
+        } catch (DatabindException e) {
+            closeSession(session, CloseStatus.NOT_ACCEPTABLE);
+            return;
+        }
+        if (!auth(session, command)) {
+            closeSession(session, CloseStatus.POLICY_VIOLATION);
+            return;
+        }
         String type = command.getType();
-        Long from = command.getFrom();
         Long to = command.getTo();
         switch (type) {
-            case Command.Type.OFFER, Command.Type.BYE -> broadcast(message, from);
-            case Command.Type.ANSWER, Command.Type.CANDIDATE -> forward(message, to);
+            case Command.Type.OFFER -> broadcast(command, message);
+            case Command.Type.ANSWER, Command.Type.CANDIDATE -> forward(command, message, to);
         }
     }
 
-    private void broadcast(TextMessage message, Long from) {
-        Set<Long> targetUsers = userRoomMapper.selectSameRoomUserIds(from);
-        targetUsers.forEach(targetUser -> forward(message, targetUser));
+    private void broadcast(Command command, TextMessage message) {
+        Set<Long> targetUsers = userRoomMapper.selectSameRoomUserIds(command.getFrom());
+        targetUsers.forEach(targetUser -> forward(command, message, targetUser));
     }
 
-    private void forward(TextMessage message, Long to) {
+    private void forward(Command command, TextMessage message, Long to) {
+        WebSocketSession target = sessions.get(to);
+        if (target == null) {
+            log.debug("WS forward skipped: from={} to={} type={}", command.getFrom(), to, command.getType());
+            return;
+        }
         try {
-            sessions.get(to).sendMessage(message);
+            target.sendMessage(message);
+            log.debug("WS forward succeed: from={} to={} type={}", command.getFrom(), to, command.getType());
         } catch (IOException e) {
-            log.warn("Forward message failed: {} Content: {}", e.getMessage(), message.getPayload());
+            log.error("WS forward failed: from={} to={} type={}", command.getFrom(), to, command.getType(), e);
         }
     }
 
@@ -66,12 +94,27 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
         String ticket = command.getTicket();
         id = ticketService.consume(ticket);
-        if (id == null) return false;
-        if (!command.getFrom().equals(id)) return false;
+        if (id == null) {
+            log.warn("WS auth failed: invalid/expired ticket, sid={} from={}", session.getId(), command.getFrom());
+            return false;
+        }
+        if (!command.getFrom().equals(id)) {
+            log.warn("WS auth failed: ticket owner={} but from={} sid={}", id, command.getFrom(), session.getId());
+            return false;
+        }
 
         sessions.put(id, session);
         session.getAttributes().put("userId", id);
+        log.debug("WS auth succeed: uid={} sid={}", id, session.getId());
         return true;
     }
 
+    private void closeSession(WebSocketSession session, CloseStatus status) {
+        Long userId = (Long) session.getAttributes().get("userId");
+        try {
+            session.close(status);
+        } catch (IOException e) {
+            log.error("WS session close error: userId={} sid={}", userId, session.getId(), e);
+        }
+    }
 }

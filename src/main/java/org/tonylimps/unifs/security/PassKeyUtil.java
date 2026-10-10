@@ -1,15 +1,18 @@
 package org.tonylimps.unifs.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+@Slf4j
 @Component
 public class PassKeyUtil {
     private final int CHALLENGE_LENGTH;
@@ -48,7 +51,11 @@ public class PassKeyUtil {
             signature.initVerify(publicKey);
             signature.update(challenge);
             return signature.verify(sig);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            log.warn("PassKey verify decode error", e);
+            return false;
+        } catch (GeneralSecurityException | RuntimeException e) {
+            log.warn("PassKey verify crypto error: alg={}", signature.getAlgorithm(), e);
             return false;
         }
     }

@@ -9,7 +9,6 @@ public class Command {
         public static final String OFFER = "offer";
         public static final String ANSWER = "answer";
         public static final String CANDIDATE = "candidate";
-        public static final String BYE = "bye";
     }
     String version;
     String type;

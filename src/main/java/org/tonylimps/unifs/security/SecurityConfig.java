@@ -1,6 +1,7 @@
 package org.tonylimps.unifs.security;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -20,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -55,7 +58,13 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         return (request, response, authException) -> {
+            log.warn("403 on {} {} from {} principal={} roles={} reason={}",
+                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(),
+                    auth == null ? "anonymous" : auth.getPrincipal(),
+                    auth == null ? "-" : auth.getAuthorities(),
+                    authException.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType(MediaType.TEXT_PLAIN_VALUE);
             response.setCharacterEncoding("UTF-8");
@@ -65,7 +74,13 @@ public class SecurityConfig {
 
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         return (request, response, accessDeniedException) -> {
+            log.warn("401 on {} {} from {} principal={} roles={} reason={}",
+                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(),
+                    auth == null ? "anonymous" : auth.getPrincipal(),
+                    auth == null ? "-" : auth.getAuthorities(),
+                    accessDeniedException.getMessage());
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType(MediaType.TEXT_PLAIN_VALUE);
             response.setCharacterEncoding("UTF-8");

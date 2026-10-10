@@ -1,5 +1,6 @@
 package org.tonylimps.unifs.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +10,7 @@ import org.tonylimps.unifs.model.dto.request.LoginFinishRequest;
 import org.tonylimps.unifs.model.dto.response.LoginFinishResponse;
 import org.tonylimps.unifs.model.dto.response.LoginStartResponse;
 import org.tonylimps.unifs.model.dto.request.LoginStartRequest;
-import org.tonylimps.unifs.exception.BusinessException;
+import org.tonylimps.unifs.exception.ApiException;
 import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.mapper.UserMapper;
 import org.tonylimps.unifs.model.entity.User;
@@ -20,7 +21,9 @@ import org.tonylimps.unifs.security.PassKeyUtil;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 public class LoginService {
     private final int REQUEST_TIMEOUT_SECONDS;
@@ -44,7 +47,7 @@ public class LoginService {
         var id = request.getId();
         var user = userMapper.selectById(id);
         if (user == null) {
-            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+            throw new ApiException(ErrorCode.LOGIN_FAILED);
         }
         var session = new AuthSession();
         var challenge = passKeyUtil.generateChallenge();
@@ -62,9 +65,9 @@ public class LoginService {
         var id = request.getId();
         var session = sessions.get(id);
         // check if request timed out
-        if (session == null) throw new BusinessException(ErrorCode.LOGIN_FAILED);
+        if (session == null) throw new ApiException(ErrorCode.LOGIN_FAILED);
         if (session.getExpireTime().isBefore(LocalDateTime.now())) {
-            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+            throw new ApiException(ErrorCode.LOGIN_FAILED);
         }
 
         // verify signature
@@ -72,7 +75,7 @@ public class LoginService {
         var rawChallenge = session.getChallenge();
         var publicKey = session.getPublicKey();
         if (!passKeyUtil.verify(rawChallenge, signature, publicKey)) {
-            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+            throw new ApiException(ErrorCode.LOGIN_FAILED);
         }
 
         // generate token
@@ -84,15 +87,19 @@ public class LoginService {
         response.setToken(token);
         sessions.remove(request.getId());
 
+        log.debug("User logged in: uid={}", user.getId());
         return response;
     }
 
     @Scheduled(cron = "${clean-timeout-requests-cron}")
-    public void cleanTempUsers() {
+    public void cleanTimeoutRequests() {
+        AtomicInteger cleaned = new AtomicInteger();
         sessions.forEach((id, info) -> {
             if (info.getExpireTime().isBefore(LocalDateTime.now())) {
                 sessions.remove(id);
+                cleaned.addAndGet(1);
             }
         });
+        log.info("Cleaned {} timeout login requests", cleaned.get());
     }
 }

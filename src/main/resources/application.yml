@@ -9,6 +9,16 @@ spring:
 mybatis:
     configuration:
         map-underscore-to-camel-case: true
+logging:
+    level:
+        root: info
+        org.tonylimps.unifs: debug
+    file:
+        name: logs/unifs-backend.log
+    logback:
+        rollingpolicy:
+            max-file-size: 100MB
+            max-history: 30
 jwt:
     secret-key: ${JWT_SECRET_KEY}
     valid-seconds: 43200 # 12 hours
