@@ -1,13 +1,15 @@
 package org.tonylimps.unifs.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.tonylimps.unifs.model.dto.request.CreateRoomRequest;
 import org.tonylimps.unifs.model.dto.request.JoinRoomRequest;
 import org.tonylimps.unifs.model.dto.request.PatchMemberRequest;
-import org.tonylimps.unifs.model.dto.request.RoomRequest;
+import org.tonylimps.unifs.model.dto.request.PatchRoomRequest;
 import org.tonylimps.unifs.model.dto.response.RoomResponse;
 import org.tonylimps.unifs.service.RoomService;
 
@@ -27,7 +29,7 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(Authentication authentication, @RequestBody RoomRequest request) {
+    public ResponseEntity<RoomResponse> createRoom(Authentication authentication, @Valid @RequestBody CreateRoomRequest request) {
         var response = roomService.createRoom(authentication, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -35,7 +37,7 @@ public class RoomController {
     @PatchMapping("/{roomId}")
     public ResponseEntity<Void> patchRoomById(Authentication authentication,
                                               @PathVariable Long roomId,
-                                              @RequestBody RoomRequest request) {
+                                              @Valid @RequestBody PatchRoomRequest request) {
         roomService.patchRoomById(authentication, roomId, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -49,7 +51,7 @@ public class RoomController {
     @PostMapping("/{roomId}/members")
     public ResponseEntity<Void> joinRoom(Authentication authentication,
                                          @PathVariable Long roomId,
-                                         @RequestBody JoinRoomRequest request) {
+                                         @Valid @RequestBody JoinRoomRequest request) {
         roomService.joinRoom(authentication, roomId, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -58,7 +60,7 @@ public class RoomController {
     public ResponseEntity<Void> patchMemberById(Authentication authentication,
                                                 @PathVariable Long roomId,
                                                 @PathVariable Long userId,
-                                                @RequestBody PatchMemberRequest request) {
+                                                @Valid @RequestBody PatchMemberRequest request) {
         roomService.patchMemberById(authentication, roomId, userId, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

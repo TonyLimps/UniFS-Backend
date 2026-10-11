@@ -1,15 +1,18 @@
 package org.tonylimps.unifs.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.tonylimps.unifs.model.dto.request.UserRequest;
+import org.tonylimps.unifs.model.dto.request.PatchUserRequest;
 import org.tonylimps.unifs.model.dto.response.UserResponse;
 import org.tonylimps.unifs.service.UserService;
 
+@Validated
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -28,7 +31,7 @@ public class UserController {
 
     @PatchMapping("/me")
     public ResponseEntity<Void> patchCurrentUser(Authentication authentication,
-                                                 @RequestBody UserRequest request) {
+                                                 @Valid @RequestBody PatchUserRequest request) {
         userService.patchCurrentUser(authentication, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -47,7 +50,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<Void> patchUserById(@PathVariable Long id, UserRequest request) {
+    public ResponseEntity<Void> patchUserById(@PathVariable Long id, @Valid @RequestBody PatchUserRequest request) {
         userService.patchUserById(id, request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

@@ -1,7 +1,9 @@
 package org.tonylimps.unifs.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +14,7 @@ import org.tonylimps.unifs.model.dto.response.LoginStartResponse;
 import org.tonylimps.unifs.model.dto.request.LoginStartRequest;
 import org.tonylimps.unifs.service.LoginService;
 
+@Validated
 @RestController
 @RequestMapping("/api/login")
 public class LoginController {
@@ -23,12 +26,12 @@ public class LoginController {
     }
 
     @PostMapping
-    public ResponseEntity<LoginStartResponse> start(@RequestBody LoginStartRequest loginStartRequest) {
+    public ResponseEntity<LoginStartResponse> start(@Valid @RequestBody LoginStartRequest loginStartRequest) {
         return ResponseEntity.ok(loginService.start(loginStartRequest));
     }
 
     @PostMapping("/finish")
-    public ResponseEntity<LoginFinishResponse> finish(@RequestBody LoginFinishRequest loginFinishRequest) {
+    public ResponseEntity<LoginFinishResponse> finish(@Valid @RequestBody LoginFinishRequest loginFinishRequest) {
         return ResponseEntity.ok(loginService.finish(loginFinishRequest));
     }
 

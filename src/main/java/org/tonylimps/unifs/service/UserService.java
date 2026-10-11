@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.tonylimps.unifs.exception.ApiException;
 import org.tonylimps.unifs.exception.ErrorCode;
 import org.tonylimps.unifs.mapper.UserMapper;
-import org.tonylimps.unifs.model.dto.request.UserRequest;
+import org.tonylimps.unifs.model.dto.request.PatchUserRequest;
 import org.tonylimps.unifs.model.dto.response.UserResponse;
 import org.tonylimps.unifs.model.entity.User;
 
@@ -27,7 +27,7 @@ public class UserService {
         return getUserById(id);
     }
 
-    public void patchCurrentUser(Authentication authentication, UserRequest request) {
+    public void patchCurrentUser(Authentication authentication, PatchUserRequest request) {
         Long id = (Long) authentication.getPrincipal();
         patchUserById(id, request);
     }
@@ -48,7 +48,7 @@ public class UserService {
         return userResponse;
     }
 
-    public void patchUserById(Long id, UserRequest request) {
+    public void patchUserById(Long id, PatchUserRequest request) {
         User user = new User();
         user.setId(id);
         BeanUtils.copyProperties(request, user);

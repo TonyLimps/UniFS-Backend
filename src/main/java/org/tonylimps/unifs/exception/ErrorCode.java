@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
+    NOT_VALID_ARGUMENT(40000, HttpStatus.BAD_REQUEST, "Arguments not valid"),
     LOGIN_FAILED(40001, HttpStatus.BAD_REQUEST, "Wrong user id or signature."),
     REGISTER_FAILED(40002, HttpStatus.BAD_REQUEST, "Wrong user id or signature."),
     JOIN_ROOM_FAILED(40003, HttpStatus.BAD_REQUEST, "Wrong room id or password."),

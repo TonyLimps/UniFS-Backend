@@ -14,7 +14,8 @@ import org.tonylimps.unifs.mapper.RoomMapper;
 import org.tonylimps.unifs.mapper.UserRoomMapper;
 import org.tonylimps.unifs.model.dto.request.JoinRoomRequest;
 import org.tonylimps.unifs.model.dto.request.PatchMemberRequest;
-import org.tonylimps.unifs.model.dto.request.RoomRequest;
+import org.tonylimps.unifs.model.dto.request.CreateRoomRequest;
+import org.tonylimps.unifs.model.dto.request.PatchRoomRequest;
 import org.tonylimps.unifs.model.dto.response.MemberResponse;
 import org.tonylimps.unifs.model.dto.response.RoomResponse;
 import org.tonylimps.unifs.model.entity.Room;
@@ -58,10 +59,10 @@ public class RoomService {
         return roomResponse;
     }
 
-    public RoomResponse createRoom(Authentication authentication, RoomRequest roomRequest) {
+    public RoomResponse createRoom(Authentication authentication, CreateRoomRequest request) {
         Room room = new Room();
-        BeanUtils.copyProperties(roomRequest, room);
-        room.setPassword(passwordEncoder.encode(roomRequest.getPassword()));
+        BeanUtils.copyProperties(request, room);
+        room.setPassword(passwordEncoder.encode(request.getPassword()));
         roomMapper.insert(room);
 
         Long userId = (Long) authentication.getPrincipal();
@@ -77,7 +78,7 @@ public class RoomService {
         return roomResponse;
     }
 
-    public void patchRoomById(Authentication authentication, Long roomId, RoomRequest roomRequest) {
+    public void patchRoomById(Authentication authentication, Long roomId, PatchRoomRequest request) {
 
         if(!hasModifyPermission(authentication, roomId)){
             log.warn("Unauthorized access to patch room: uid={} rid={}", authentication.getPrincipal(), roomId);
@@ -85,12 +86,12 @@ public class RoomService {
         }
 
         Room room = new Room();
-        BeanUtils.copyProperties(roomRequest, room);
+        BeanUtils.copyProperties(request, room);
         room.setId(roomId);
-        room.setPassword(passwordEncoder.encode(roomRequest.getPassword()));
+        room.setPassword(passwordEncoder.encode(request.getPassword()));
         roomMapper.updateById(room);
 
-        if (roomRequest.getPassword() != null) {
+        if (request.getPassword() != null) {
             userRoomMapper.deleteByRoomId(roomId);
         }
     }
