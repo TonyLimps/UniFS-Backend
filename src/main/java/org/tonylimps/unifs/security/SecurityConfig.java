@@ -3,6 +3,7 @@ package org.tonylimps.unifs.security;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -21,6 +22,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.tonylimps.unifs.exception.ApiException;
+import org.tonylimps.unifs.exception.ErrorCode;
 
 @Slf4j
 @Configuration
@@ -29,6 +33,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
+    @Autowired
+    @Qualifier("handlerExceptionResolver")
+    private HandlerExceptionResolver resolver;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -65,10 +72,7 @@ public class SecurityConfig {
                     auth == null ? "anonymous" : auth.getPrincipal(),
                     auth == null ? "-" : auth.getAuthorities(),
                     authException.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().print("401 Unauthorized");
+            resolver.resolveException(request,response,null,new ApiException(ErrorCode.UNAUTHORIZED));
         };
     }
 
@@ -81,10 +85,7 @@ public class SecurityConfig {
                     auth == null ? "anonymous" : auth.getPrincipal(),
                     auth == null ? "-" : auth.getAuthorities(),
                     accessDeniedException.getMessage());
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().print("403 Forbidden");
+            resolver.resolveException(request,response,null,new ApiException(ErrorCode.UNAUTHORIZED));
         };
     }
 

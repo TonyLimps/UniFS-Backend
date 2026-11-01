@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleException(MethodArgumentNotValidException ex) {
-        log.warn("Method argument not valid", ex);
+        log.debug("Method argument not valid", ex);
 
         List<Map<String, String>> errors = ex.getBindingResult()
                 .getFieldErrors()
@@ -44,7 +44,8 @@ public class GlobalExceptionHandler {
 
         var response = Map.of(
                 "code", 40000,
-                "message", errors
+                "message","Arguments not valid",
+                "fields", errors
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
