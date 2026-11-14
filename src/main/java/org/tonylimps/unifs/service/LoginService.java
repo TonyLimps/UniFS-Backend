@@ -18,7 +18,7 @@ import org.tonylimps.unifs.model.pojo.AuthSession;
 import org.tonylimps.unifs.security.JwtUtil;
 import org.tonylimps.unifs.security.PassKeyUtil;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +52,7 @@ public class LoginService {
         var session = new AuthSession();
         var challenge = passKeyUtil.generateChallenge();
         BeanUtils.copyProperties(user, session);
-        session.setExpireTime(LocalDateTime.now().plusSeconds(REQUEST_TIMEOUT_SECONDS));
+        session.setExpireTime(ZonedDateTime.now().plusSeconds(REQUEST_TIMEOUT_SECONDS));
         session.setChallenge(challenge);
         sessions.put(id, session);
 
@@ -66,7 +66,7 @@ public class LoginService {
         var session = sessions.get(id);
         // check if request timed out
         if (session == null) throw new ApiException(ErrorCode.LOGIN_FAILED);
-        if (session.getExpireTime().isBefore(LocalDateTime.now())) {
+        if (session.getExpireTime().isBefore(ZonedDateTime.now())) {
             throw new ApiException(ErrorCode.LOGIN_FAILED);
         }
 
@@ -80,7 +80,7 @@ public class LoginService {
 
         // generate token
         User user = userMapper.selectById(id);
-        user.setLastLoginTime(LocalDateTime.now());
+        user.setLastLoginTime(ZonedDateTime.now());
         userMapper.updateById(user);
         var token = jwtUtil.generateToken(user);
         var response = new LoginFinishResponse();
@@ -95,7 +95,7 @@ public class LoginService {
     public void cleanTimeoutRequests() {
         AtomicInteger cleaned = new AtomicInteger();
         sessions.forEach((id, info) -> {
-            if (info.getExpireTime().isBefore(LocalDateTime.now())) {
+            if (info.getExpireTime().isBefore(ZonedDateTime.now())) {
                 sessions.remove(id);
                 cleaned.addAndGet(1);
             }

@@ -19,7 +19,7 @@ import org.tonylimps.unifs.security.JwtUtil;
 import org.tonylimps.unifs.security.PassKeyUtil;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +50,7 @@ public class RegisterService {
         var session = new AuthSession();
         var challenge = passKeyUtil.generateChallenge();
         BeanUtils.copyProperties(request, session);
-        session.setExpireTime(LocalDateTime.now().plusSeconds(REQUEST_TIMEOUT_SECONDS));
+        session.setExpireTime(ZonedDateTime.now().plusSeconds(REQUEST_TIMEOUT_SECONDS));
         session.setChallenge(challenge);
         sessions.put(id, session);
 
@@ -64,7 +64,7 @@ public class RegisterService {
         var session = sessions.get(request.getId());
         // check if request timed out
         if (session == null) throw new ApiException(ErrorCode.REGISTER_FAILED);
-        if (session.getExpireTime().isBefore(LocalDateTime.now())) {
+        if (session.getExpireTime().isBefore(ZonedDateTime.now())) {
             throw new ApiException(ErrorCode.REGISTER_FAILED);
         }
 
@@ -95,7 +95,7 @@ public class RegisterService {
     public void cleanTimeoutRequests() {
         AtomicInteger cleaned = new AtomicInteger();
         sessions.forEach((id, info) -> {
-            if (info.getExpireTime().isBefore(LocalDateTime.now())) {
+            if (info.getExpireTime().isBefore(ZonedDateTime.now())) {
                 sessions.remove(id);
                 cleaned.addAndGet(1);
             }

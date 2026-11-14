@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.tonylimps.unifs.model.dto.response.TicketResponse;
 import org.tonylimps.unifs.model.pojo.TicketSession;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +29,7 @@ public class TicketService {
 
         var session = new TicketSession();
         session.setUserId(userId);
-        session.setExpireTime(LocalDateTime.now().plusSeconds(TICKET_EXPIRE_SECONDS));
+        session.setExpireTime(ZonedDateTime.now().plusSeconds(TICKET_EXPIRE_SECONDS));
         sessions.put(ticket, session);
 
         var response = new TicketResponse();
@@ -41,8 +41,8 @@ public class TicketService {
         var session = sessions.get(ticket);
         if (session == null) return null;
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expireTime = session.getExpireTime();
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime expireTime = session.getExpireTime();
         if (expireTime.isBefore(now)) return null;
         sessions.remove(ticket);
 
@@ -51,7 +51,7 @@ public class TicketService {
 
     @Scheduled(cron = "${clean-expired-tickets-cron}")
     public void cleanExpiredTickets() {
-        LocalDateTime now = LocalDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now();
         sessions.forEach((ticket, session) -> {
             if (session.getExpireTime().isBefore(now)) {
                 sessions.remove(ticket);

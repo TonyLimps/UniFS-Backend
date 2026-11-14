@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @TableName(value = "rooms")
@@ -15,6 +15,6 @@ public class Room {
     String name;
     String password;
     String authEmail;
-    LocalDateTime createTime;
-    LocalDateTime lastUsedTime;
+    ZonedDateTime createTime;
+    ZonedDateTime lastUsedTime;
 }
