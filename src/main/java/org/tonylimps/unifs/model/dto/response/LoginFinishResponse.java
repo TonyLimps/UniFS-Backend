@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class LoginFinishResponse {
+    Long id;
     String token;
 }

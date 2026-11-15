@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tonylimps.unifs.model.dto.request.LoginFinishRequest;
+import org.tonylimps.unifs.model.dto.request.LoginStartRequest;
 import org.tonylimps.unifs.model.dto.response.LoginFinishResponse;
 import org.tonylimps.unifs.model.dto.response.LoginStartResponse;
-import org.tonylimps.unifs.model.dto.request.LoginStartRequest;
 import org.tonylimps.unifs.service.LoginService;
 
 @Validated
